@@ -36,8 +36,15 @@ private:
   const int m_MaxPollution{ 5 };
   int m_Pollution; 
   int m_Score;
+  int m_Level;
 
+  float m_DamageSecs;
+  float m_TotalDamageSecs;
+
+  // Text textures
   Texture* m_ScoreTexture;
+  Texture* m_LevelTexture;
+  Texture* m_HealthTexture;
 
   Pot* m_Pot;
 };

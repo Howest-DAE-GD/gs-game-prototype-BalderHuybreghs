@@ -155,6 +155,7 @@ xcopy "$(SolutionDir)Resources\*.*" "$(TargetDir)" /y /d /s</Command>
     <ClCompile Include="Pot.cpp" />
     <ClCompile Include="RectangleShape.cpp" />
     <ClCompile Include="Shape.cpp" />
+    <ClCompile Include="PolygonShape.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CircleShape.h" />
@@ -164,6 +165,7 @@ xcopy "$(SolutionDir)Resources\*.*" "$(TargetDir)" /y /d /s</Command>
     <ClInclude Include="Pot.h" />
     <ClInclude Include="RectangleShape.h" />
     <ClInclude Include="Shape.h" />
+    <ClInclude Include="PolygonShape.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -24,7 +24,7 @@ public:
   void Draw(float screenWidth) const;
   bool Update(float elapsedSec); // Returns true if update was reset
 
-  bool SelectShape(int id);
+  bool IsSelected(int id) const;
 
   int GetShapeId(float screenWidth, const Point2f& position) const;
   Rectf GetRect() const;
@@ -37,12 +37,15 @@ public:
   void SetIngredients(int ingredients);
   void SetVariations(int variations);
   void SetViewingTime(float viewingTime);
+
+  float GetTime() const;
+
+  void GenerateRecipe();
 private:
   void Flush();
 
   std::vector<Shape*> GetRandomShapes(int size) const;
   Shape* GetRandomShape() const;
-  void GenerateRecipe();
 
   void DrawResult(int id, const Point2f& position) const;
 

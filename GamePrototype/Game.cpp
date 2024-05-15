@@ -31,21 +31,39 @@ void Game::Initialize( )
   m_Pot = new Pot(center, 3, 3, 5.f, .5f, .5f, 5.f);
   //m_Pot = new Pot(center, 14, 14, .1f, .1f, .1f, .1f);
   m_Score = 0;
+  m_Level = 1; // Start at level 1
+
+  m_TotalDamageSecs = 1.5f;
+  m_DamageSecs = 0.f;
 
   m_ScoreTexture = new Texture(std::to_string(m_Score), "fonts/roboto.ttf", 32, Color4f{ 1.f, 1.f, 1.f, 1.f });
+  m_LevelTexture = new Texture("Level: " + std::to_string(m_Level), "fonts/roboto.ttf", 32, Color4f{ 1.f, 1.f, 1.f, 1.f });
+  m_HealthTexture = new Texture("Health: " + std::to_string(int((1 - (m_Pollution / float(m_MaxPollution))) * 100)) + "%", "fonts/roboto.ttf", 32, Color4f{ 1.f, 1.f, 1.f, 1.f });
 }
 
 void Game::Cleanup( )
 {
   delete m_Pot;
+  delete m_LevelTexture;
   delete m_ScoreTexture;
+  delete m_HealthTexture;
 }
 
 void Game::Update( float elapsedSec )
 {
   if (m_Pot->Update(elapsedSec)) {
     m_Pollution++;
+    m_DamageSecs = m_TotalDamageSecs;
+    m_HealthTexture = new Texture("Health: " + std::to_string(int((1 - (m_Pollution / float(m_MaxPollution))) * 100)) + "%", "fonts/roboto.ttf", 32, Color4f{ 1.f, 1.f, 1.f, 1.f });
   }
+
+  if (m_Pollution >= m_MaxPollution) {
+    Cleanup();
+    Initialize();
+    return;
+  }
+
+  m_DamageSecs = std::max(0.f, m_DamageSecs - elapsedSec);
 }
 
 void Game::Draw( ) const
@@ -62,10 +80,12 @@ void Game::Draw( ) const
     GetViewPort().height
   };
 
-  SetColor(Color4f(1.f, 0.f, 0.f, m_Pollution / float(m_MaxPollution)));
+  SetColor(Color4f(.8f, 0.2f, 0.2f, m_DamageSecs / m_TotalDamageSecs));
   FillRect(pollutionRect);
 
-  m_ScoreTexture->Draw(Point2f{ 10.f, 10.f });
+  m_ScoreTexture->Draw(Point2f{ GetViewPort().left + GetViewPort().width - 10.f - m_ScoreTexture->GetWidth(), GetViewPort().bottom + GetViewPort().height - 10.f - m_ScoreTexture->GetHeight()});
+  m_LevelTexture->Draw(Point2f( 10.f, GetViewPort().height - 10.f - m_LevelTexture->GetHeight() ));
+  m_HealthTexture->Draw(Point2f{ 10.f, 10.f });
 }
 
 void Game::ProcessKeyDownEvent( const SDL_KeyboardEvent & e )
@@ -105,21 +125,32 @@ void Game::ProcessMouseUpEvent( const SDL_MouseButtonEvent& e )
     return;
   }
 
-  if (!m_Pot->SelectShape(id)) {
+  float time{ m_Pot->GetTime() };
+
+  if (!m_Pot->IsSelected(id)) {
     m_Pollution++;
+    m_DamageSecs = m_TotalDamageSecs;
+    m_HealthTexture = new Texture("Health: " + std::to_string(int((1 - (m_Pollution / float(m_MaxPollution))) * 100)) + "%", "fonts/roboto.ttf", 32, Color4f{ 1.f, 1.f, 1.f, 1.f });
+    m_Pot->GenerateRecipe();
     return;
   }
 
-  m_Score += 100;
+  m_Score += int(100 * (1 - (time / 5.f)));
 
-  if (m_Score % 400 == 0) {
-    m_Pot->SetIngredients((m_Pot->GetIngredients() + 1) & 14);
-    m_Pot->SetVariations((m_Pot->GetVariations() + 1) % 14);
+  if (m_Score - (500 * (m_Level -1)) > 500) {
+    m_Pot->SetIngredients(std::min(14, m_Pot->GetIngredients() + 1));
+    m_Pot->SetVariations(std::min(14, m_Pot->GetVariations() + 1));
     m_Pot->SetViewingTime(m_Pot->GetViewingTime() * 0.9);
+    m_Level++;
+
+    delete m_LevelTexture;
+    m_LevelTexture = new Texture("Level: " + std::to_string(m_Level), "fonts/roboto.ttf", 32, Color4f{1.f, 1.f, 1.f, 1.f});
   }
 
   delete m_ScoreTexture;
   m_ScoreTexture = new Texture(std::to_string(m_Score), "fonts/roboto.ttf", 32, Color4f{ 1.f, 1.f, 1.f, 1.f });
+
+  m_Pot->GenerateRecipe();
 }
 
 void Game::ClearBackground( ) const

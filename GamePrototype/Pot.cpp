@@ -4,6 +4,7 @@
 #include "RectangleShape.h"
 #include "CircleShape.h"
 #include "utils.h"
+#include "PolygonShape.h"
 
 Pot::Pot(const Rectf& rectangle, int ingredients, int variations, float viewingTime, float craftingTime, float showingTime, float selectionTime)
   : m_State(State::View), m_Rectangle(rectangle), m_Ingredients(ingredients), m_Variations(variations), m_ViewingTime(viewingTime), m_ShowingTime(showingTime), m_SelectionTime(selectionTime), m_CraftingTime(craftingTime), m_SineTime(0), m_Result(0)
@@ -36,7 +37,7 @@ void Pot::Draw(float screenWidth) const
         m_Shapes[i]->Draw(
           Point2f{
             x + 60.f * i,
-            m_Rectangle.bottom + m_Rectangle.height + 100.f + MathUtils::Wave(10.f, 5.f, 1.f, 0.f, m_SineTime)
+            m_Rectangle.bottom + m_Rectangle.height + 50.f + MathUtils::Wave(10.f, 5.f, i * (M_PI / m_Shapes.size()), 0.f, m_SineTime)
           });
       }
 
@@ -59,7 +60,7 @@ void Pot::Draw(float screenWidth) const
       {
         const Point2f pos{
             x + 60.f * i,
-            m_Rectangle.bottom + m_Rectangle.height + 100.f + MathUtils::Wave(10.f, 5.f, 1.f, 0.f, m_SineTime)
+            m_Rectangle.bottom + m_Rectangle.height + 50.f + MathUtils::Wave(10.f, 5.f, i * (M_PI / m_Shapes.size()), 0.f, m_SineTime)
         };
 
         if (i == shapesToHide) {
@@ -89,7 +90,7 @@ void Pot::Draw(float screenWidth) const
       {
         const Point2f pos{
             x + 60.f * i,
-            m_Rectangle.bottom + m_Rectangle.height + 100.f + MathUtils::Wave(10.f, 5.f, 1.f, 0.f, m_SineTime)
+            m_Rectangle.bottom + m_Rectangle.height + 50.f + MathUtils::Wave(10.f, 5.f, i * (M_PI / m_Craftables.size()), 0.f, m_SineTime)
         };
 
         if (i == shapesToShow - 1) {
@@ -113,7 +114,7 @@ void Pot::Draw(float screenWidth) const
       {
         const Point2f pos{
             x + 60.f * i,
-            m_Rectangle.bottom + m_Rectangle.height + 100.f + MathUtils::Wave(10.f, 5.f, 1.f, 0.f, m_SineTime)
+            m_Rectangle.bottom + m_Rectangle.height + 50.f + MathUtils::Wave(10.f, 5.f, i * (M_PI / m_Craftables.size()), 0.f, m_SineTime)
         };
 
         DrawResult(i, pos);
@@ -250,7 +251,7 @@ Shape* Pot::GetRandomShape() const
 {
   bool filled{ MathUtils::RandBool() };
   Color4f color{ MathUtils::RandColor(2) };
-  int shape{ MathUtils::RandInt(0, 1) };
+  int shape{ MathUtils::RandInt(0, 2) };
 
   switch (shape) {
     case 0:
@@ -259,6 +260,39 @@ Shape* Pot::GetRandomShape() const
 
       return new RectangleShape(
         size,
+        color,
+        filled
+      );
+    }
+
+    case 1:
+    {
+      // Triangle
+      float baseLength{ MathUtils::RandFloat(25.f, 50.f, 2.f) };
+      // float rotation{ MathUtils::RandFloat(0.f, M_PI * 2, 5.f) };
+      float rotation{};
+
+      // Calculate the height of the equilateral triangle based on the base length
+      float height = baseLength * sqrt(3.f) / 2.f;
+
+      std::vector<Point2f> points{
+        // Bottom left point
+        Point2f{-baseLength * 0.5f, -height * 0.5f},
+        // Bottom right point
+        Point2f{baseLength * 0.5f, -height * 0.5f},
+        // Top point
+        Point2f{0.f, height * 0.5f}
+      };
+
+      // Rotate the points by the specified angle
+      for (Point2f& point : points) {
+        float x = point.x * cos(rotation) - point.y * sin(rotation);
+        float y = point.x * sin(rotation) + point.y * cos(rotation);
+        point = Point2f{ x, y };
+      }
+
+      return new PolygonShape(
+        points,
         color,
         filled
       );
@@ -325,6 +359,11 @@ void Pot::SetViewingTime(float viewingTime)
   m_ViewingTime = viewingTime;
 }
 
+float Pot::GetTime() const
+{
+    return m_Time;
+}
+
 int Pot::GetShapeId(float screenWidth, const Point2f& position) const
 {
   float x{
@@ -336,7 +375,7 @@ int Pot::GetShapeId(float screenWidth, const Point2f& position) const
   {
     const Rectf area{
       (x + 60.f * i) - 30.f,
-      m_Rectangle.bottom + m_Rectangle.height + 100.f - 30.f,
+      m_Rectangle.bottom + m_Rectangle.height + 50.f - 30.f,
       60.f,
       60.f
     };
@@ -349,9 +388,7 @@ int Pot::GetShapeId(float screenWidth, const Point2f& position) const
   return -1;
 }
 
-bool Pot::SelectShape(int id)
+bool Pot::IsSelected(int id) const
 {
-  bool res{ id == m_Result };
-  GenerateRecipe();
-  return res;
+  return id == m_Result;
 }
