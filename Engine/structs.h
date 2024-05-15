@@ -19,9 +19,9 @@ struct Point2f
 
 	float x;
 	float y;
+
+  bool operator==(const Point2f& other) const;
 };
-
-
 
 struct Rectf
 {
@@ -33,6 +33,9 @@ struct Rectf
 	float width;
 	float height;
 
+  bool operator==(const Rectf& other) const;
+
+  Point2f Center() const;
 };
 
 
@@ -45,6 +48,8 @@ struct Color4f
 	float g;
 	float b;
 	float a;
+
+  bool operator==(const Color4f& other) const;
 };
 
 struct Circlef

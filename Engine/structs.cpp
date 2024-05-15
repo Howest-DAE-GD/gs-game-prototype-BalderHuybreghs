@@ -24,6 +24,11 @@ Point2f::Point2f( float x, float y )
 {
 }
 
+bool Point2f::operator==(const Point2f& other) const
+{
+  return x == other.x && y == other.y;
+}
+
 //-----------------------------------------------------------------
 // Rectf Constructors
 //-----------------------------------------------------------------
@@ -40,6 +45,19 @@ Rectf::Rectf( float left, float bottom, float width, float height )
 {
 }
 
+bool Rectf::operator==(const Rectf& other) const
+{
+  return width == other.width && height == other.height;
+}
+
+Point2f Rectf::Center() const
+{
+    return Point2f(
+      left + width / 2.f,
+      bottom + height / 2.f
+    );
+}
+
 //-----------------------------------------------------------------
 // Color4f Constructors
 //-----------------------------------------------------------------
@@ -54,6 +72,11 @@ Color4f::Color4f( float r, float g, float b, float a )
 	,b{ b }
 	,a{ a }
 {
+}
+
+bool Color4f::operator==(const Color4f& other) const
+{
+    return r == other.r && b == other.b && g == other.g && a == other.a;
 }
 
 //-----------------------------------------------------------------

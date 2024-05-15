@@ -1,5 +1,9 @@
 #pragma once
 #include "BaseGame.h"
+#include "Pot.h"
+
+#include <vector>
+
 class Game : public BaseGame
 {
 public:
@@ -27,4 +31,13 @@ private:
 	void Initialize();
 	void Cleanup( );
 	void ClearBackground( ) const;
+
+  // VARIABLES
+  const int m_MaxPollution{ 5 };
+  int m_Pollution; 
+  int m_Score;
+
+  Texture* m_ScoreTexture;
+
+  Pot* m_Pot;
 };
