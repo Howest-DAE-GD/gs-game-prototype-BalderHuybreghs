@@ -2,6 +2,8 @@
 #include "Game.h"
 #include "utils.h"
 
+#include <iostream>
+
 using namespace utils;
 
 Game::Game( const Window& window ) 
@@ -58,6 +60,8 @@ void Game::Update( float elapsedSec )
   }
 
   if (m_Pollution >= m_MaxPollution) {
+    std::cout << "Score: " << m_Score << std::endl;
+
     Cleanup();
     Initialize();
     return;

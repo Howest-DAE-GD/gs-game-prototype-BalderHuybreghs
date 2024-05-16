@@ -6,6 +6,8 @@
 #include "utils.h"
 #include "PolygonShape.h"
 
+#include <cmath>
+
 Pot::Pot(const Rectf& rectangle, int ingredients, int variations, float viewingTime, float craftingTime, float showingTime, float selectionTime)
   : m_State(State::View), m_Rectangle(rectangle), m_Ingredients(ingredients), m_Variations(variations), m_ViewingTime(viewingTime), m_ShowingTime(showingTime), m_SelectionTime(selectionTime), m_CraftingTime(craftingTime), m_SineTime(0), m_Result(0)
 {
@@ -81,19 +83,17 @@ void Pot::Draw(float screenWidth) const
       };
 
       float timePerShape{ m_ShowingTime / m_Craftables.size() };
-      float percentage{ m_Time / m_ShowingTime };
+      int currentShapeIndex = int(m_Time / timePerShape);
+      float lerpProgress{ (m_Time - currentShapeIndex * timePerShape) / timePerShape };
 
-      int shapesToShow{ int(percentage * m_Craftables.size()) };
-      float lerpProgress{ (m_Time - shapesToShow * timePerShape) / timePerShape };
-
-      for (int i = 0; i < shapesToShow; i++)
+      for (int i = 0; i <= currentShapeIndex && i < m_Craftables.size(); i++)
       {
         const Point2f pos{
             x + 60.f * i,
             m_Rectangle.bottom + m_Rectangle.height + 50.f + MathUtils::Wave(10.f, 5.f, i * (M_PI / m_Craftables.size()), 0.f, m_SineTime)
         };
 
-        if (i == shapesToShow - 1) {
+        if (i == currentShapeIndex) {
           DrawResult(i, MathUtils::Lerp(m_Rectangle.Center(), pos, lerpProgress));
           continue;
         }
