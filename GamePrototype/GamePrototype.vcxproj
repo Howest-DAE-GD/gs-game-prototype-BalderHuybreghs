@@ -147,8 +147,11 @@ xcopy "$(SolutionDir)Resources\*.*" "$(TargetDir)" /y /d /s</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Ability.cpp" />
     <ClCompile Include="CircleShape.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="HealthAbility.cpp" />
+    <ClCompile Include="IngredientAbility.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathUtils.cpp" />
     <ClCompile Include="pch.cpp" />
@@ -156,16 +159,22 @@ xcopy "$(SolutionDir)Resources\*.*" "$(TargetDir)" /y /d /s</Command>
     <ClCompile Include="RectangleShape.cpp" />
     <ClCompile Include="Shape.cpp" />
     <ClCompile Include="PolygonShape.cpp" />
+    <ClCompile Include="SlowAbility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ability.h" />
     <ClInclude Include="CircleShape.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameState.h" />
+    <ClInclude Include="HealthAbility.h" />
+    <ClInclude Include="IngredientAbility.h" />
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Pot.h" />
     <ClInclude Include="RectangleShape.h" />
     <ClInclude Include="Shape.h" />
     <ClInclude Include="PolygonShape.h" />
+    <ClInclude Include="SlowAbility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

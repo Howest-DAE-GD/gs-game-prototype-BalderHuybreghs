@@ -1,8 +1,12 @@
 #pragma once
 #include "BaseGame.h"
 #include "Pot.h"
+#include "Ability.h"
+#include "GameState.h"
 
 #include <vector>
+
+class Ability;
 
 class Game : public BaseGame
 {
@@ -23,8 +27,7 @@ public:
 	void ProcessKeyUpEvent( const SDL_KeyboardEvent& e ) override;
 	void ProcessMouseMotionEvent( const SDL_MouseMotionEvent& e ) override;
 	void ProcessMouseDownEvent( const SDL_MouseButtonEvent& e ) override;
-	void ProcessMouseUpEvent( const SDL_MouseButtonEvent& e ) override;
-
+  void ProcessMouseUpEvent(const SDL_MouseButtonEvent& e) override;
 private:
 
 	// FUNCTIONS
@@ -33,10 +36,9 @@ private:
 	void ClearBackground( ) const;
 
   // VARIABLES
-  const int m_MaxPollution{ 5 };
-  int m_Pollution; 
-  int m_Score;
-  int m_Level;
+  GameState m_GameState{};
+  Point2f m_MousePos{};
+  Ability* m_AbilityHover{ nullptr };
 
   float m_DamageSecs;
   float m_TotalDamageSecs;
@@ -47,4 +49,6 @@ private:
   Texture* m_HealthTexture;
 
   Pot* m_Pot;
+
+  std::vector<Ability*> m_ActiveAbilities;
 };

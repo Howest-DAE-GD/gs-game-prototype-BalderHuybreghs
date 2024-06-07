@@ -5,6 +5,9 @@
 #include "CircleShape.h"
 #include "utils.h"
 #include "PolygonShape.h"
+#include "HealthAbility.h"
+#include "IngredientAbility.h"
+#include "SlowAbility.h"
 
 #include <cmath>
 
@@ -16,12 +19,21 @@ Pot::Pot(const Rectf& rectangle, int ingredients, int variations, float viewingT
   m_Craftables.reserve(m_Variations);
   m_Shapes.reserve(ingredients);
 
+  m_Abilities.push_back(new HealthAbility(1));
+  m_Abilities.push_back(new IngredientAbility(1));
+  m_Abilities.push_back(new SlowAbility(1.f));
+
   GenerateRecipe();
 }
 
 Pot::~Pot()
 {
   delete m_Texture;
+
+  for (Ability* ability : m_Abilities) {
+    delete ability;
+    ability = nullptr;
+  }
 
   Flush();
 }
@@ -122,6 +134,55 @@ void Pot::Draw(float screenWidth) const
 
       break;
     }
+
+    case State::ShowAbility:
+    {
+      float x{
+        (screenWidth / 2.f) - ((60.f * (m_Shapes.size() - 1)) / 2.f)
+      };
+
+      float timePerAbility{ m_ShowingTime / m_Abilities.size() };
+      int currentAbilityIndex = int(m_Time / timePerAbility);
+      float lerpProgress{ (m_Time - currentAbilityIndex * timePerAbility) / timePerAbility };
+
+      for (int i = 0; i <= currentAbilityIndex && i < m_Abilities.size(); i++)
+      {
+        const Point2f pos{
+            x + 60.f * i,
+            m_Rectangle.bottom + m_Rectangle.height + 50.f + MathUtils::Wave(10.f, 5.f, i * (M_PI / m_Abilities.size()), 0.f, m_SineTime)
+        };
+
+        Point2f p{ MathUtils::Lerp(m_Rectangle.Center(), pos, lerpProgress) };
+        if (i == currentAbilityIndex) {
+          m_Abilities[i]->Draw(Rectf{ p.x, p.y, 60.f, 60.f });
+          continue;
+        }
+
+        m_Abilities[i]->Draw(Rectf{ p.x, p.y, 60.f, 60.f });
+      }
+
+      break;
+    }
+
+    case State::Ability:
+    {
+      float x{
+        (screenWidth / 2.f) - ((60.f * (m_Abilities.size() - 1)) / 2.f)
+      };
+
+      // Check which shape was selected
+      for (int i = 0; i < m_Abilities.size(); i++)
+      {
+        const Rectf area{
+          (x + 60.f * i) - 30.f,
+          m_Rectangle.bottom + m_Rectangle.height + 50.f - 30.f + MathUtils::Wave(10.f, 5.f, i * (M_PI / m_Abilities.size()), 0.f, m_SineTime),
+          60.f,
+          60.f
+        };
+
+        m_Abilities[i]->Draw(area);
+      }
+    }
   }
 
   m_Texture->Draw(m_Rectangle);
@@ -169,6 +230,15 @@ bool Pot::Update(float elapsedSec)
         m_State = State::View;
         GenerateRecipe();
         val = true;
+      }
+
+      break;
+    }
+    case State::ShowAbility:
+    {
+      if (m_Time > m_ShowingTime) {
+        m_Time = 0;
+        m_State = State::Ability;
       }
 
       break;
@@ -249,8 +319,12 @@ std::vector<Shape*> Pot::GetRandomShapes(int size) const
 
 Shape* Pot::GetRandomShape() const
 {
+  // Min and max colors to make sure the colors are always clearly visible and distinguishable
+  Color4f colorMin{ Color4f{ 0, 0, 0, 1.f } };
+  Color4f colorMax{ Color4f{ .9f, .9f, .9f, 1.f } };
+
   bool filled{ MathUtils::RandBool() };
-  Color4f color{ MathUtils::RandColor(2) };
+  Color4f color{ MathUtils::RandColor(colorMin, colorMax, 3) };
   int shape{ MathUtils::RandInt(0, 2) };
 
   switch (shape) {
@@ -359,6 +433,11 @@ void Pot::SetViewingTime(float viewingTime)
   m_ViewingTime = viewingTime;
 }
 
+void Pot::ShowAbilities()
+{
+  m_State = State::ShowAbility;
+}
+
 float Pot::GetTime() const
 {
     return m_Time;
@@ -386,6 +465,30 @@ int Pot::GetShapeId(float screenWidth, const Point2f& position) const
   }
 
   return -1;
+}
+
+Ability* Pot::GetAbility(float screenWidth, const Point2f& position) const
+{
+  float x{
+    (screenWidth / 2.f) - ((60.f * (m_Abilities.size() - 1)) / 2.f)
+  };
+
+  // Check which shape was selected
+  for (int i = 0; i < m_Abilities.size(); i++)
+  {
+    const Rectf area{
+      (x + 60.f * i) - 30.f,
+      m_Rectangle.bottom + m_Rectangle.height + 50.f - 30.f,
+      60.f,
+      60.f
+    };
+
+    if (utils::IsPointInRect(position, area)) {
+      return m_Abilities[i];
+    }
+  }
+
+  return nullptr;
 }
 
 bool Pot::IsSelected(int id) const
